@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.staticfile.org/webuploader/0.1.5/webuploader.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="http://cdn.staticfile.org/jquery/1.10.2/jquery.js"></script>
+    <script type="text/javascript" src="http://cdn.staticfile.org/webuploader/0.1.5/webuploader.min.js"></script>
+
+</head>
+<body>
+<div id="thelist" class="uploader-list"></div>
+<div style="margin:20px 20px 20px 0;">
+    <div id="picker" class="form-control-focus">选择文件</div>
+</div>
+<button id="btnSync" type="button" class="btn btn-warning">开始同步</button>
+</body>
+<!-- 省略上面代码 -->
+<script>
+    var uploader = WebUploader.create({
+
+        // swf文件路径
+        swf :"http://cdn.staticfile.org/webuploader/0.1.5/Uploader.swf",
+
+        // 文件接收服务端。
+        server : './test-sync/sync',
+
+        chunked : true,
+
+        threads : 1,
+
+        fromData : {
+            guid : 'guid'
+        },
+
+        // 选择文件的按钮。可选。
+        // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+        pick : '#picker',
+
+        // 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+        resize : false
+    });
+
+    // 当有文件被添加进队列的时候
+    uploader.on('fileQueued', function(file) {
+        //alert(123);
+        $("#thelist").append(
+            '<div id="' + file.id + '" class="item">'
+            + '<h4 class="info">' + file.name + '</h4>'
+            + '<p class="state">等待上传...</p>' + '</div>');
+    });
+
+    uploader.on('uploadSuccess', function(file) {
+        $('#' + file.id).find('p.state').text('已上传');
+    });
+
+    uploader.on('uploadError', function(file) {
+        $('#' + file.id).find('p.state').text('上传出错');
+    });
+
+    uploader.on('uploadComplete', function(file) {
+        $('#' + file.id).find('.progress').fadeOut();
+    });
+
+    $("#btnSync").on('click', function() {
+        if ($(this).hasClass('disabled')) {
+            return false;
+        }
+        uploader.options.formData.guid = Math.random();
+        uploader.upload();
+
+    });
+</script> </body>
+
+</html>
